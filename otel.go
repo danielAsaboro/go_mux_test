@@ -3,12 +3,17 @@ package main
 import (
 	"context"
 	"errors"
+	"os"
 	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/trace"
+)
+
+var (
+	otlpEndpoint = os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
 )
 
 // setupOTelSDK bootstraps the OpenTelemetry pipeline.
@@ -59,7 +64,7 @@ func newPropagator() propagation.TextMapPropagator {
 func newTraceProvider() (*trace.TracerProvider, error) {
 	// Set up trace provider
 	traceExporter, err := otlptracegrpc.New(context.Background(),
-		otlptracegrpc.WithEndpoint("localhost:4317"),
+		otlptracegrpc.WithEndpoint(otlpEndpoint),
 		otlptracegrpc.WithInsecure(),
 	)
 	if err != nil {
@@ -70,7 +75,7 @@ func newTraceProvider() (*trace.TracerProvider, error) {
 		trace.WithSampler(trace.AlwaysSample()),
 		trace.WithBatcher(traceExporter,
 			// Default is 5s. Set to 1s for demonstrative purposes.
-			trace.WithBatchTimeout(time.Second)),
+			trace.WithBatchTimeout(5 * time.Second )),
 	)
 	return traceProvider, nil
 }
