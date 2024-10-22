@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"errors"
 	"log"
 	"net/http"
 
@@ -27,18 +25,6 @@ func main() {
 	}
 
 	r := mux.NewRouter().StrictSlash(true)
-
-	ctx := context.Background()
-
-	// Set up OpenTelemetry.
-	otelShutdown, err := setupOTelSDK(ctx)
-	if err != nil {
-		return
-	}
-	// Handle shutdown properly so nothing leaks.
-	defer func() {
-		err = errors.Join(err, otelShutdown(context.Background()))
-	}()
 
 	r.HandleFunc("/allgroceries", AllGroceries)
 	r.HandleFunc("/groceries/{name}", SingleGrocery)
